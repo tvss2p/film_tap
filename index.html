@@ -4,6 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>FILMTAP — レトロフィルター現像ラボ</title>
+<meta name="theme-color" content="#F2C338">
+<meta name="apple-mobile-web-app-title" content="FILMTAP">
+<meta name="application-name" content="FILMTAP">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/svg+xml" href="assets/app-icon.svg">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Dela+Gothic+One&family=Mochiy+Pop+One&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -315,16 +322,16 @@
             </svg>
             <div class="demo-after-stack">
               <figure class="demo-photo demo-after c">
-                <img src="assets/demo-idol-before.png" alt="" data-demo-filter="fuji">
+                <img src="assets/demo-idol-filter-source.png" alt="" data-demo-filter="fuji">
               </figure>
               <figure class="demo-photo demo-after d">
-                <img src="assets/demo-idol-before.png" alt="" data-demo-filter="gr">
+                <img src="assets/demo-idol-filter-source.png" alt="" data-demo-filter="gr">
               </figure>
               <figure class="demo-photo demo-after b">
-                <img src="assets/demo-idol-before.png" alt="" data-demo-filter="summer">
+                <img src="assets/demo-idol-filter-source.png" alt="" data-demo-filter="summer">
               </figure>
               <figure class="demo-photo demo-after a">
-                <img src="assets/demo-idol-before.png" alt="" data-demo-filter="film">
+                <img src="assets/demo-idol-filter-source.png" alt="" data-demo-filter="film">
               </figure>
             </div>
           </div>
@@ -463,9 +470,11 @@ function process(srcData, dstData, w, h, f, strength){
 
 /* 空状態の見本写真にも、実際のフィルター処理を小さく適用する */
 function renderDemoFilters(){
-  const source=document.querySelector(".demo-before img");
   const demoImgs=[...document.querySelectorAll(".demo-after img[data-demo-filter]")];
-  if(!source || !demoImgs.length) return;
+  if(!demoImgs.length) return;
+  const source=new Image();
+  source.decoding="async";
+  source.src="assets/demo-idol-filter-source.png";
 
   const render=()=>{
     if(!source.naturalWidth || !source.naturalHeight) return;

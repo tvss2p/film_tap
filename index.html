@@ -164,8 +164,6 @@
   .btn .ic{font-size:18px}
   .btn-print{background:var(--red);color:#fff;box-shadow:0 5px 0 var(--red-deep)}
   .btn-print:active{box-shadow:0 2px 0 var(--red-deep)}
-  .btn-save{background:var(--paper);color:var(--ink);box-shadow:0 5px 0 #b9ac8c}
-  .btn-save:active{box-shadow:0 2px 0 #b9ac8c}
   .btn[disabled]{opacity:.45;pointer-events:none;filter:grayscale(.3)}
 
   .reset{display:block;margin:14px auto 0;background:none;border:none;font-family:"Space Mono",monospace;
@@ -244,8 +242,7 @@
       <input type="range" id="strength" min="0" max="100" value="80" aria-label="フィルター強度">
 
       <div class="actions">
-        <button class="btn btn-print" id="printBtn"><span class="ic">🖨️</span>プリント</button>
-        <button class="btn btn-save" id="saveBtn" disabled><span class="ic">⬇️</span>保存</button>
+        <button class="btn btn-print" id="saveBtn" disabled><span class="ic">🖨️</span>保存</button>
       </div>
       <button class="reset" id="resetBtn">べつの写真にする</button>
     </div>
@@ -359,7 +356,6 @@ const controls=document.getElementById("controls");
 const chipsEl=document.getElementById("chips");
 const strength=document.getElementById("strength");
 const strengthVal=document.getElementById("strengthVal");
-const printBtn=document.getElementById("printBtn");
 const saveBtn=document.getElementById("saveBtn");
 const resetBtn=document.getElementById("resetBtn");
 const ejector=document.getElementById("ejector");
@@ -474,17 +470,6 @@ function buildChips(){
   });
 }
 
-/* プリント（現像）アニメ */
-function playPrint(){
-  render();
-  frame.classList.remove("printing");
-  void frame.offsetWidth; // reflow
-  frame.classList.add("printing");
-  printBtn.disabled=true;
-  const dur = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 700 : 2300;
-  setTimeout(()=>{ printBtn.disabled=false; saveBtn.disabled=false; }, dur);
-}
-
 /* フル解像度で処理して仕上がり画像を生成 */
 function buildOutput(){
   const f=FILTERS.find(x=>x.id===activeId);
@@ -524,11 +509,11 @@ function save(){
   printImg.src=url;
   sheetImg.src=url;
   sheetDl.href=url; sheetDl.setAttribute("download",name);
-  printBtn.disabled=true; saveBtn.disabled=true;
+  saveBtn.disabled=true;
   playEject(()=>{
     sheet.classList.add("show");
     ejector.classList.remove("go");
-    printBtn.disabled=false; saveBtn.disabled=false;
+    saveBtn.disabled=false;
     saving=false;
   });
 }
@@ -536,7 +521,6 @@ function save(){
 /* ===== イベント ===== */
 fileInput.addEventListener("change",e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 strength.addEventListener("input",()=>{strengthVal.textContent=strength.value+"%";scheduleRender();});
-printBtn.addEventListener("click",playPrint);
 saveBtn.addEventListener("click",save);
 sheetClose.addEventListener("click",()=>sheet.classList.remove("show"));
 sheet.addEventListener("click",e=>{if(e.target===sheet)sheet.classList.remove("show");});

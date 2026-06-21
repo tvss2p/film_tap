@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>FILMTAP — レトロフィルター現像ラボ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F4EAD0;        /* cream paper */
+    --paper-2:#EADFBF;
+    --yellow:#F2C338;       /* faded kodak yellow */
+    --yellow-deep:#E9B11F;
+    --red:#E0463A;          /* faded vermilion */
+    --red-deep:#C8392E;
+    --ink:#23201A;          /* near-black ink */
+    --ink-soft:#4A4438;
+    --pop:#17C0AD;          /* reiwa pop aqua */
+    --pop-deep:#0FA493;
+    --line:#23201A;
+    --radius:18px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Bricolage Grotesque",system-ui,-apple-system,"Hiragino Kaku Gothic ProN",sans-serif;
+    color:var(--ink);
+    background:
+      radial-gradient(120% 80% at 50% -10%, #FBF3DC 0%, var(--paper) 55%, var(--paper-2) 100%);
+    min-height:100dvh;
+    padding:18px 14px calc(28px + env(safe-area-inset-bottom));
+    display:flex;justify-content:center;
+  }
+  /* subtle paper grain */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.05;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  }
+  .wrap{width:100%;max-width:460px;position:relative;z-index:1}
+
+  /* ---- header / brand ---- */
+  .brand{
+    background:var(--ink);border-radius:var(--radius) var(--radius) 0 0;
+    padding:14px 16px 12px;position:relative;overflow:hidden;
+    border:3px solid var(--ink);border-bottom:none;
+  }
+  .sprockets{display:flex;gap:7px;margin-bottom:10px}
+  .sprockets i{width:13px;height:9px;border-radius:2px;background:var(--paper);opacity:.85;display:block}
+  .brand-row{display:flex;align-items:baseline;gap:10px}
+  .logo{
+    font-weight:800;font-size:30px;letter-spacing:-1px;line-height:.9;color:var(--yellow);
+    text-shadow:2px 2px 0 var(--red);
+  }
+  .logo b{color:var(--paper)}
+  .tag{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:2px;color:var(--pop);text-transform:uppercase;margin-left:auto;text-align:right;line-height:1.3}
+
+  /* ---- body card ---- */
+  .panel{
+    background:var(--yellow);
+    border:3px solid var(--ink);
+    border-radius:0 0 var(--radius) var(--radius);
+    padding:16px 16px 18px;
+    box-shadow:0 14px 0 -4px rgba(35,32,26,.18), 0 26px 50px -18px rgba(35,32,26,.5);
+  }
+
+  /* ---- viewfinder / print stage ---- */
+  .stage{
+    position:relative;background:var(--ink);
+    border:3px solid var(--ink);border-radius:14px;
+    padding:10px;overflow:hidden;
+  }
+  .slot{height:8px;border-radius:4px;background:#0c0b09;margin:-2px 6px 8px;box-shadow:inset 0 -3px 4px rgba(0,0,0,.6)}
+  .frame{
+    position:relative;background:var(--paper);border-radius:8px;overflow:hidden;
+    aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;
+  }
+  .frame canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto}
+  /* empty state */
+  .drop{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    text-align:center;color:var(--ink-soft);padding:22px;cursor:pointer;
+    background:repeating-linear-gradient(45deg,#F4EAD0 0 12px,#EFE2C2 12px 24px);
+  }
+  .drop.hide{display:none}
+  .drop .cam{font-size:40px}
+  .drop .big{font-weight:800;font-size:19px;color:var(--ink)}
+  .drop .sm{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.5px}
+  .drop .pill{margin-top:4px;background:var(--red);color:#fff;font-weight:700;font-size:13px;padding:9px 16px;border-radius:30px;border:2px solid var(--ink)}
+
+  /* develop overlay */
+  .develop{position:absolute;inset:0;pointer-events:none;background:var(--paper);opacity:0}
+  .frame.printing{animation:eject .55s cubic-bezier(.2,.9,.25,1.05) both}
+  .frame.printing canvas{animation:devphoto 2.1s ease-out .15s both}
+  .frame.printing .develop{animation:devsheet 2.1s ease-out .15s both}
+  @keyframes eject{0%{transform:translateY(-92%)}70%{transform:translateY(2%)}100%{transform:translateY(0)}}
+  @keyframes devphoto{
+    0%{filter:brightness(1.7) contrast(.45) saturate(.25) blur(2px);opacity:.5}
+    35%{filter:brightness(1.25) contrast(.7) saturate(.55) blur(1px);opacity:.85}
+    100%{filter:none;opacity:1}
+  }
+  @keyframes devsheet{0%{opacity:.92}45%{opacity:.4}100%{opacity:0}}
+
+  /* ---- controls ---- */
+  .controls{margin-top:14px}
+  .label{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--ink);opacity:.7;margin:0 2px 7px}
+
+  /* filter chips */
+  .chips{display:flex;gap:9px;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch}
+  .chips::-webkit-scrollbar{height:0}
+  .chip{
+    flex:0 0 auto;scroll-snap-align:start;width:74px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit;
+  }
+  .chip .thumb{
+    width:74px;height:74px;border-radius:11px;border:2px solid var(--ink);overflow:hidden;background:#cfc4a6;
+    display:block;position:relative;transition:transform .12s ease;
+  }
+  .chip .thumb canvas{width:100%;height:100%;display:block;object-fit:cover}
+  .chip .nm{display:block;font-weight:700;font-size:10.5px;line-height:1.15;margin-top:5px;color:var(--ink);text-align:center}
+  .chip.active .thumb{border-color:var(--red);transform:translateY(-2px);box-shadow:0 4px 0 var(--red-deep)}
+  .chip.active .nm{color:var(--red-deep)}
+
+  /* strength slider */
+  .strengthbar{display:flex;align-items:center;justify-content:space-between;margin:14px 2px 6px}
+  .strengthbar .val{font-family:"Space Mono",monospace;font-weight:700;font-size:13px;background:var(--ink);color:var(--yellow);padding:3px 9px;border-radius:7px}
+  input[type=range]{
+    -webkit-appearance:none;appearance:none;width:100%;height:34px;background:transparent;margin:0;cursor:pointer;
+  }
+  input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:6px;border:2px solid var(--ink);
+    background:linear-gradient(90deg,var(--pop),var(--yellow-deep))}
+  input[type=range]::-moz-range-track{height:10px;border-radius:6px;border:2px solid var(--ink);
+    background:linear-gradient(90deg,var(--pop),var(--yellow-deep))}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:24px;height:24px;border-radius:50%;
+    background:var(--red);border:3px solid var(--ink);margin-top:-9px;box-shadow:0 2px 0 var(--red-deep)}
+  input[type=range]::-moz-range-thumb{width:22px;height:22px;border-radius:50%;background:var(--red);border:3px solid var(--ink)}
+
+  /* action buttons */
+  .actions{display:flex;gap:10px;margin-top:16px}
+  .btn{flex:1;border:3px solid var(--ink);border-radius:13px;padding:14px 10px;font-family:inherit;font-weight:800;font-size:16px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:transform .08s ease, box-shadow .08s ease}
+  .btn:active{transform:translateY(3px)}
+  .btn .ic{font-size:18px}
+  .btn-print{background:var(--red);color:#fff;box-shadow:0 5px 0 var(--red-deep)}
+  .btn-print:active{box-shadow:0 2px 0 var(--red-deep)}
+  .btn-save{background:var(--paper);color:var(--ink);box-shadow:0 5px 0 #b9ac8c}
+  .btn-save:active{box-shadow:0 2px 0 #b9ac8c}
+  .btn[disabled]{opacity:.45;pointer-events:none;filter:grayscale(.3)}
+
+  .reset{display:block;margin:14px auto 0;background:none;border:none;font-family:"Space Mono",monospace;
+    font-size:11px;letter-spacing:1px;color:var(--ink-soft);text-decoration:underline;cursor:pointer}
+
+  .foot{text-align:center;font-family:"Space Mono",monospace;font-size:9.5px;letter-spacing:1px;color:var(--ink-soft);
+    margin-top:16px;opacity:.7;line-height:1.6}
+
+  @media (prefers-reduced-motion: reduce){
+    .frame.printing{animation:none!important}
+    .frame.printing canvas{animation:devsoft .5s ease-out both!important}
+    .frame.printing .develop{animation:devsheet .5s ease-out both!important}
+  }
+  @keyframes devsoft{0%{opacity:.4;filter:brightness(1.3) saturate(.6)}100%{opacity:1;filter:none}}
+
+  /* ---- 保存オーバーレイ ---- */
+  .sheet{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:20px;
+    background:rgba(35,32,26,.78);backdrop-filter:blur(2px)}
+  .sheet.show{display:flex;animation:fade .25s ease both}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  .sheet-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:14px;max-width:380px;width:100%;
+    box-shadow:0 20px 50px -12px rgba(0,0,0,.6)}
+  .sheet-card img{display:block;width:100%;border-radius:8px;border:2px solid var(--ink)}
+  .sheet-hint{font-family:"Space Mono",monospace;font-size:12px;text-align:center;color:var(--ink);margin:12px 4px 4px;line-height:1.6}
+  .sheet-actions{display:flex;gap:10px;margin-top:12px}
+  .sheet-actions a,.sheet-actions button{flex:1;text-align:center;text-decoration:none;border:3px solid var(--ink);border-radius:12px;
+    padding:12px 8px;font-family:inherit;font-weight:800;font-size:15px;cursor:pointer}
+  .sheet-dl{background:var(--pop);color:var(--ink)}
+  .sheet-close{background:var(--paper);color:var(--ink)}
+
+  input[type=file]{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+  :focus-visible{outline:3px solid var(--pop);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="brand">
+    <div class="sprockets"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="brand-row">
+      <div class="logo">FILM<b>TAP</b></div>
+      <div class="tag">Retro<br>Filter Lab</div>
+    </div>
+  </header>
+
+  <main class="panel">
+    <div class="stage">
+      <div class="slot"></div>
+      <div class="frame" id="frame">
+        <canvas id="view"></canvas>
+        <div class="develop"></div>
+        <label class="drop" id="drop" for="file">
+          <div class="cam">📷</div>
+          <div class="big">写真をえらぶ</div>
+          <div class="sm">タップ / ドロップで読みこみ</div>
+          <span class="pill">画像をひらく</span>
+        </label>
+      </div>
+    </div>
+    <input type="file" id="file" accept="image/*">
+
+    <div class="controls" id="controls" style="display:none">
+      <p class="label">フィルム</p>
+      <div class="chips" id="chips"></div>
+
+      <div class="strengthbar">
+        <p class="label" style="margin:0">強度</p>
+        <span class="val" id="strengthVal">80%</span>
+      </div>
+      <input type="range" id="strength" min="0" max="100" value="80" aria-label="フィルター強度">
+
+      <div class="actions">
+        <button class="btn btn-print" id="printBtn"><span class="ic">🖨️</span>プリント</button>
+        <button class="btn btn-save" id="saveBtn" disabled><span class="ic">⬇️</span>保存</button>
+      </div>
+      <button class="reset" id="resetBtn">べつの写真にする</button>
+    </div>
+  </main>
+
+  <p class="foot">FILMTAP — すべてブラウザ内で処理。写真はどこにも送信されません。</p>
+</div>
+
+<div class="sheet" id="sheet">
+  <div class="sheet-card">
+    <img id="sheetImg" alt="仕上がり画像">
+    <p class="sheet-hint">画像を長押しして保存（PCは右クリック →「画像を保存」）</p>
+    <div class="sheet-actions">
+      <a class="sheet-dl" id="sheetDl" download>ダウンロード</a>
+      <button class="sheet-close" id="sheetClose" type="button">とじる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============ フィルター定義（Lightroomプリセットのブラウザ近似） ============ */
+const FILTERS = [
+  {id:"summer", name:"Warm Summer",  exp:.12, con:6,  temp:10, tint:3, sat:5,  vib:16, black:8,  white:252, sH:220,sS:4,  hH:45,hS:12, grain:8,  vig:.06, mid:.42, soft:.2,  green:.12},
+  {id:"film",   name:"Warm Film",    exp:.12, con:4,  temp:8,  tint:4, sat:3,  vib:14, black:18, white:247, sH:175,sS:9,  hH:45,hS:12, grain:24, vig:.12, mid:.40, soft:.5,  green:.10},
+  {id:"leica",  name:"Leica",        exp:0,   con:14, temp:4,  tint:2, sat:4,  vib:10, black:2,  white:254, sH:230,sS:6,  hH:40,hS:7,  grain:8,  vig:.12, mid:.40, soft:0,   green:0},
+  {id:"gr",     name:"RICOH GR",     exp:-.05,con:20, temp:-4, tint:3, sat:-2, vib:8,  black:0,  white:255, sH:215,sS:10, hH:45,hS:5,  grain:12, vig:.14, mid:.38, soft:0,   green:0},
+  {id:"fuji",   name:"Fuji Chrome",  exp:0,   con:8,  temp:-2, tint:3, sat:-10,vib:-4, black:8,  white:248, sH:70, sS:6,  hH:45,hS:6,  grain:10, vig:.08, mid:.42, soft:.1,  green:0},
+  {id:"canon",  name:"Canon",        exp:.1,  con:6,  temp:9,  tint:4, sat:3,  vib:12, black:5,  white:252, sH:40, sS:3,  hH:45,hS:10, grain:8,  vig:.07, mid:.42, soft:.15, green:0},
+  {id:"contax", name:"Contax",       exp:.15, con:-4, temp:7,  tint:5, sat:-2, vib:8,  black:22, white:246, sH:60, sS:5,  hH:48,hS:12, grain:14, vig:.06, mid:.44, soft:.7,  green:0},
+  {id:"dispo",  name:"Disposable",   exp:.12, con:-6, temp:12, tint:8, sat:6,  vib:12, black:26, white:246, sH:90, sS:12, hH:50,hS:14, grain:32, vig:.36, mid:.20, soft:.5,  green:0},
+  {id:"instax", name:"Instax",       exp:.18, con:-12,temp:6,  tint:4, sat:-6, vib:6,  black:30, white:242, sH:160,sS:8,  hH:50,hS:10, grain:18, vig:.12, mid:.44, soft:.7,  green:0},
+];
+
+/* hsl(0..360,1,.5) -> rgb方向ベクトル(中心0.5を引いた) */
+function hueDir(h){
+  h/=360; const k=(n)=>{const t=(n+h*12)%12;return .5 - .5*Math.max(-1,Math.min(Math.min(t-3,9-t),1));};
+  return [k(0)-0.5, k(8)-0.5, k(4)-0.5];
+}
+
+/* ============ ピクセル処理 ============ */
+function process(srcData, dstData, w, h, f, strength){
+  const s = srcData.data, d = dstData.data;
+  const st = strength/100;
+  const expF = Math.pow(2, f.exp);
+  const rOff = f.temp*1.1 + f.tint*0.4;
+  const bOff = -f.temp*1.1 + f.tint*0.4;
+  const gOff = -f.tint*0.9;
+  const con = 1 + f.con/100;
+  const black = f.black, span = (f.white - f.black)/255;
+  const satF = 1 + f.sat/100, vib = f.vib/100, green = f.green;
+  const sd = hueDir(f.sH), hd = hueDir(f.hH);
+  const sAmt = f.sS/100*0.7, hAmt = f.hS/100*0.7;
+  const grain = f.grain*0.85, vig = f.vig, mid = f.mid;
+  const cx=0.5, cy=0.5, norm=1/0.7071;
+  let i=0;
+  for(let y=0;y<h;y++){
+    const ny=y/h-cy;
+    for(let x=0;x<w;x++,i+=4){
+      const sr=s[i], sg=s[i+1], sb=s[i+2];
+      let r=sr, g=sg, b=sb;
+      // exposure
+      r*=expF; g*=expF; b*=expF;
+      // white balance
+      r+=rOff; g+=gOff; b+=bOff;
+      // contrast
+      r=(r-128)*con+128; g=(g-128)*con+128; b=(b-128)*con+128;
+      // fade (black lift / white cap)
+      r=black+r*span; g=black+g*span; b=black+b*span;
+      // saturation + vibrance
+      const gray=0.299*r+0.587*g+0.114*b;
+      const mx=Math.max(r,g,b), mn=Math.min(r,g,b);
+      const px=(mx-mn)/(mx+1e-3); // current saturation 0..1
+      let sf=satF + vib*(1-px);
+      if(green>0 && g>=r && g>=b) sf+=green;
+      r=gray+(r-gray)*sf; g=gray+(g-gray)*sf; b=gray+(b-gray)*sf;
+      // split tone
+      const L=(0.299*r+0.587*g+0.114*b)/255;
+      const sw=1-L, hw=L;
+      r+=(sd[0]*sAmt*sw + hd[0]*hAmt*hw)*255;
+      g+=(sd[1]*sAmt*sw + hd[1]*hAmt*hw)*255;
+      b+=(sd[2]*sAmt*sw + hd[2]*hAmt*hw)*255;
+      // grain (luminance noise)
+      if(grain){const n=(Math.random()-0.5)*grain; r+=n; g+=n; b+=n;}
+      // vignette
+      if(vig){
+        const nx=x/w-cx;
+        let dist=Math.sqrt(nx*nx+ny*ny)*norm;
+        let t=(dist-mid)/(1-mid); if(t<0)t=0; else if(t>1)t=1; t=t*t*(3-2*t);
+        const vf=1-vig*t; r*=vf; g*=vf; b*=vf;
+      }
+      // clamp
+      if(r<0)r=0;else if(r>255)r=255;
+      if(g<0)g=0;else if(g>255)g=255;
+      if(b<0)b=0;else if(b>255)b=255;
+      // strength blend against original
+      d[i]  =sr+(r-sr)*st;
+      d[i+1]=sg+(g-sg)*st;
+      d[i+2]=sb+(b-sb)*st;
+      d[i+3]=s[i+3];
+    }
+  }
+}
+
+/* ============ アプリ ============ */
+const fileInput=document.getElementById("file");
+const drop=document.getElementById("drop");
+const frame=document.getElementById("frame");
+const view=document.getElementById("view");
+const vctx=view.getContext("2d",{willReadFrequently:true});
+const controls=document.getElementById("controls");
+const chipsEl=document.getElementById("chips");
+const strength=document.getElementById("strength");
+const strengthVal=document.getElementById("strengthVal");
+const printBtn=document.getElementById("printBtn");
+const saveBtn=document.getElementById("saveBtn");
+const resetBtn=document.getElementById("resetBtn");
+const sheet=document.getElementById("sheet");
+const sheetImg=document.getElementById("sheetImg");
+const sheetDl=document.getElementById("sheetDl");
+const sheetClose=document.getElementById("sheetClose");
+
+let imgBitmap=null;          // 読み込んだ原画像
+let prevW=0,prevH=0;
+let origPrev=null;           // プレビュー原データ(ぼかし無し)
+let basePrev=null;           // ぼかし適用後データ(soft用)
+let curSoft=-1;
+let activeId="summer";
+let rafPending=false;
+
+/* 画像読み込み */
+async function loadFile(file){
+  if(!file || !file.type.startsWith("image/")) return;
+  try{
+    if(window.createImageBitmap){
+      imgBitmap=await createImageBitmap(file,{imageOrientation:"from-image"});
+    }else{
+      imgBitmap=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(file);});
+    }
+  }catch(e){
+    imgBitmap=await new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=URL.createObjectURL(file);});
+  }
+  setupPreview();
+  drop.classList.add("hide");
+  controls.style.display="block";
+  frame.style.aspectRatio = (imgBitmap.width/imgBitmap.height).toFixed(4);
+  buildChips();
+  saveBtn.disabled=false;
+  render();
+}
+
+function setupPreview(){
+  const maxSide=920;
+  let w=imgBitmap.width, h=imgBitmap.height;
+  const sc=Math.min(1, maxSide/Math.max(w,h));
+  prevW=Math.round(w*sc); prevH=Math.round(h*sc);
+  view.width=prevW; view.height=prevH;
+  // 原データ（ぼかし無し）
+  const tmp=document.createElement("canvas");tmp.width=prevW;tmp.height=prevH;
+  const tctx=tmp.getContext("2d");
+  tctx.drawImage(imgBitmap,0,0,prevW,prevH);
+  origPrev=tctx.getImageData(0,0,prevW,prevH);
+  curSoft=-1;
+}
+
+/* soft(ぼかし)を反映したベースデータを用意 */
+function getBase(soft){
+  if(soft===curSoft && basePrev) return basePrev;
+  const tmp=document.createElement("canvas");tmp.width=prevW;tmp.height=prevH;
+  const tctx=tmp.getContext("2d");
+  if(soft>0) tctx.filter=`blur(${soft}px)`;
+  tctx.drawImage(imgBitmap,0,0,prevW,prevH);
+  basePrev=tctx.getImageData(0,0,prevW,prevH);
+  curSoft=soft;
+  return basePrev;
+}
+
+/* プレビュー描画 */
+function render(){
+  if(!imgBitmap) return;
+  const f=FILTERS.find(x=>x.id===activeId);
+  const base=getBase(f.soft);
+  const out=vctx.createImageData(prevW,prevH);
+  process(base,out,prevW,prevH,f,+strength.value);
+  vctx.putImageData(out,0,0);
+}
+function scheduleRender(){
+  if(rafPending) return; rafPending=true;
+  requestAnimationFrame(()=>{rafPending=false;render();});
+}
+
+/* フィルターチップ（ミニサムネ付き） */
+function buildChips(){
+  chipsEl.innerHTML="";
+  // 小さいサムネ用データ
+  const tw=74,th=74;
+  const tmp=document.createElement("canvas");tmp.width=tw;tmp.height=th;
+  const tctx=tmp.getContext("2d");
+  // センタークロップ
+  const r=Math.max(tw/imgBitmap.width, th/imgBitmap.height);
+  const dw=imgBitmap.width*r, dh=imgBitmap.height*r;
+  tctx.drawImage(imgBitmap,(tw-dw)/2,(th-dh)/2,dw,dh);
+  const thumbBase=tctx.getImageData(0,0,tw,th);
+
+  FILTERS.forEach(f=>{
+    const btn=document.createElement("button");
+    btn.className="chip"+(f.id===activeId?" active":"");
+    btn.type="button";
+    const tdiv=document.createElement("div");tdiv.className="thumb";
+    const c=document.createElement("canvas");c.width=tw;c.height=th;
+    const cx=c.getContext("2d");
+    const od=cx.createImageData(tw,th);
+    process(thumbBase,od,tw,th,f,80);
+    cx.putImageData(od,0,0);
+    tdiv.appendChild(c);
+    const nm=document.createElement("span");nm.className="nm";nm.textContent=f.name;
+    btn.appendChild(tdiv);btn.appendChild(nm);
+    btn.addEventListener("click",()=>{
+      activeId=f.id;
+      [...chipsEl.children].forEach(ch=>ch.classList.remove("active"));
+      btn.classList.add("active");
+      render();
+    });
+    chipsEl.appendChild(btn);
+  });
+}
+
+/* プリント（現像）アニメ */
+function playPrint(){
+  render();
+  frame.classList.remove("printing");
+  void frame.offsetWidth; // reflow
+  frame.classList.add("printing");
+  printBtn.disabled=true;
+  const dur = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 700 : 2300;
+  setTimeout(()=>{ printBtn.disabled=false; saveBtn.disabled=false; }, dur);
+}
+
+/* 保存（フル解像度で処理してダウンロード） */
+function save(){
+  const f=FILTERS.find(x=>x.id===activeId);
+  const maxSide=2400;
+  let w=imgBitmap.width,h=imgBitmap.height;
+  const sc=Math.min(1,maxSide/Math.max(w,h));
+  const fw=Math.round(w*sc), fh=Math.round(h*sc);
+  const cv=document.createElement("canvas");cv.width=fw;cv.height=fh;
+  const cx=cv.getContext("2d");
+  if(f.soft>0) cx.filter=`blur(${(f.soft*fw/prevW).toFixed(2)}px)`;
+  cx.drawImage(imgBitmap,0,0,fw,fh);
+  const base=cx.getImageData(0,0,fw,fh);
+  const out=cx.createImageData(fw,fh);
+  process(base,out,fw,fh,f,+strength.value);
+  cx.filter="none";
+  cx.putImageData(out,0,0);
+  const url=cv.toDataURL("image/jpeg",0.92);
+  const name=`filmtap_${f.id}_${strength.value}.jpg`;
+  sheetImg.src=url;
+  sheetDl.href=url; sheetDl.setAttribute("download",name);
+  sheet.classList.add("show");
+}
+
+/* ===== イベント ===== */
+fileInput.addEventListener("change",e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
+strength.addEventListener("input",()=>{strengthVal.textContent=strength.value+"%";scheduleRender();});
+printBtn.addEventListener("click",playPrint);
+saveBtn.addEventListener("click",save);
+sheetClose.addEventListener("click",()=>sheet.classList.remove("show"));
+sheet.addEventListener("click",e=>{if(e.target===sheet)sheet.classList.remove("show");});
+resetBtn.addEventListener("click",()=>{
+  imgBitmap=null;controls.style.display="none";drop.classList.remove("hide");
+  fileInput.value="";saveBtn.disabled=true;frame.classList.remove("printing");
+  vctx.clearRect(0,0,view.width,view.height);
+});
+
+/* ドラッグ＆ドロップ */
+["dragenter","dragover"].forEach(ev=>frame.addEventListener(ev,e=>{e.preventDefault();}));
+frame.addEventListener("drop",e=>{e.preventDefault();if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+</script>
+</body>
+</html>

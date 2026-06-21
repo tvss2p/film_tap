@@ -6,7 +6,7 @@
 <title>FILMTAP — レトロフィルター現像ラボ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Dela+Gothic+One&family=Mochiy+Pop+One&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root{
     --paper:#F4EAD0;        /* cream paper */
@@ -48,12 +48,17 @@
   }
   .sprockets{display:flex;gap:7px;margin-bottom:10px}
   .sprockets i{width:13px;height:9px;border-radius:2px;background:var(--paper);opacity:.85;display:block}
-  .brand-row{display:flex;align-items:baseline;gap:10px}
+  .brand-row{display:flex;align-items:center;gap:10px}
   .logo{
     font-weight:800;font-size:30px;letter-spacing:-1px;line-height:.9;color:var(--yellow);
     text-shadow:2px 2px 0 var(--red);
   }
   .logo b{color:var(--paper)}
+  .privacy-note{
+    flex:1;min-width:0;text-align:center;font-family:"Space Mono",monospace;
+    font-size:9.5px;letter-spacing:.7px;line-height:1.45;color:var(--paper);
+    opacity:.86;padding:0 4px;
+  }
   .tag{font-family:"Space Mono",monospace;font-size:10px;letter-spacing:2px;color:var(--pop);text-transform:uppercase;margin-left:auto;text-align:right;line-height:1.3}
 
   /* ---- body card ---- */
@@ -78,13 +83,70 @@
     aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;
   }
   .frame canvas{display:block;max-width:100%;max-height:100%;width:auto;height:auto}
+  .frame.saving-print canvas{animation:previewToSlot .95s cubic-bezier(.22,.72,.2,1) both;transform-origin:top center;will-change:transform,opacity,filter}
+  @keyframes previewToSlot{
+    0%{opacity:1;transform:translateY(0) scale(1);filter:none}
+    34%{opacity:.98;transform:translateY(-9%) scale(.97);filter:brightness(1.03)}
+    72%{opacity:.72;transform:translateY(-48%) scale(.8);filter:brightness(1.08)}
+    100%{opacity:.16;transform:translateY(-96%) scale(.54);filter:brightness(1.16) blur(.6px)}
+  }
   /* empty state */
   .drop{
-    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
     text-align:center;color:var(--ink-soft);padding:22px;cursor:pointer;
     background:repeating-linear-gradient(45deg,#F4EAD0 0 12px,#EFE2C2 12px 24px);
   }
   .drop.hide{display:none}
+  .demo-flow{
+    width:min(100%,340px);height:206px;position:relative;margin:0 auto 2px;flex:0 0 auto;
+  }
+  .demo-copy{
+    position:absolute;left:50%;top:0;transform:translateX(-50%) rotate(-3deg);
+    width:300px;text-shadow:none;text-align:center;color:var(--ink);
+    z-index:6;
+  }
+  .demo-kicker{
+    display:inline-block;font-family:"Space Mono",monospace;
+    font-size:8px;font-weight:700;letter-spacing:.12em;color:var(--red);
+    transform:rotate(-5deg);
+  }
+  .demo-prefix{
+    display:block;margin-top:-1px;font-family:"Mochiy Pop One","Hiragino Maru Gothic ProN",sans-serif;
+    font-size:15px;line-height:1.08;letter-spacing:.02em;color:var(--ink);
+  }
+  .demo-main{
+    display:block;margin-top:0;font-family:"Dela Gothic One","Hiragino Kaku Gothic ProN",sans-serif;
+    font-size:35px;line-height:.92;letter-spacing:-.07em;color:var(--red);
+    transform:skew(-3deg);
+  }
+  .demo-main em{
+    font-style:normal;color:var(--yellow);
+    -webkit-text-stroke:1.2px var(--red);paint-order:stroke fill;
+  }
+  .demo-photo{
+    position:absolute;background:#fff;border:5px solid #fff;border-bottom-width:14px;border-radius:4px;
+    box-shadow:0 10px 18px -10px rgba(35,32,26,.6),0 2px 0 rgba(35,32,26,.15);
+    overflow:hidden;
+  }
+  .demo-photo img{display:block;width:100%;height:100%;object-fit:cover}
+  .demo-before{left:0;top:90px;width:112px;height:94px;transform:rotate(-7deg);z-index:1}
+  .demo-after-stack{position:absolute;right:0;top:72px;width:150px;height:128px}
+  .demo-after{width:104px;height:88px}
+  .demo-after.a{right:16px;top:4px;width:118px;height:98px;transform:rotate(5deg);z-index:4}
+  .demo-after.b{right:0;top:28px;transform:rotate(-7deg);z-index:3}
+  .demo-after.c{right:44px;top:34px;transform:rotate(13deg);z-index:2}
+  .demo-after.d{right:20px;top:52px;transform:rotate(-2deg);z-index:1}
+  .demo-after.a img:not([data-processed="true"]){filter:sepia(.42) saturate(1.22) contrast(1.04) brightness(1.04) hue-rotate(-5deg)}
+  .demo-after.b img:not([data-processed="true"]){filter:hue-rotate(175deg) saturate(.72) contrast(1.2) brightness(.98)}
+  .demo-after.c img:not([data-processed="true"]){filter:sepia(.18) saturate(1.65) contrast(.88) brightness(1.18)}
+  .demo-after.d img:not([data-processed="true"]){filter:hue-rotate(-25deg) saturate(.9) contrast(1.38) brightness(.92)}
+  .demo-after img[data-processed="true"]{filter:none}
+  .demo-arrow{
+    position:absolute;left:118px;top:112px;width:76px;height:38px;z-index:5;transform:rotate(-4deg);
+  }
+  .demo-arrow path{
+    fill:none;stroke:var(--red);stroke-width:8;stroke-linecap:round;stroke-linejoin:round;
+  }
   .drop .cam{font-size:40px}
   .drop .big{font-weight:800;font-size:19px;color:var(--ink)}
   .drop .sm{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.5px}
@@ -169,27 +231,45 @@
   .reset{display:block;margin:14px auto 0;background:none;border:none;font-family:"Space Mono",monospace;
     font-size:11px;letter-spacing:1px;color:var(--ink-soft);text-decoration:underline;cursor:pointer}
 
-  .foot{text-align:center;font-family:"Space Mono",monospace;font-size:9.5px;letter-spacing:1px;color:var(--ink-soft);
-    margin-top:16px;opacity:.7;line-height:1.6}
-
   @media (prefers-reduced-motion: reduce){
     .frame.printing{animation:none!important}
+    .frame.saving-print canvas{animation:previewToSlotSoft .18s ease-out both!important}
     .frame.printing canvas{animation:devsoft .5s ease-out both!important}
     .frame.printing .develop{animation:devsheet .5s ease-out both!important}
   }
+  @keyframes previewToSlotSoft{0%{opacity:1}100%{opacity:.35}}
   @keyframes devsoft{0%{opacity:.4;filter:brightness(1.3) saturate(.6)}100%{opacity:1;filter:none}}
   @media (prefers-reduced-motion: reduce){
     .ejector.go .printcard{animation:eject2soft .45s ease-out forwards!important}
+    .sheet.show .sheet-card{animation:sheetInSoft .16s ease-out both!important}
   }
   @keyframes eject2soft{0%{opacity:0;transform:translate(-50%,-6%)}100%{opacity:1;transform:translate(-50%,7%)}}
+  @keyframes sheetInSoft{
+    0%{opacity:0;transform:translateY(var(--print-final-y, 22px))}
+    100%{opacity:1;transform:translateY(var(--print-final-y, 22px))}
+  }
 
   /* ---- 保存オーバーレイ ---- */
-  .sheet{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:20px;
+  .sheet{position:fixed;inset:0;z-index:30;display:none;
     background:rgba(35,32,26,.78);backdrop-filter:blur(2px)}
-  .sheet.show{display:flex;animation:fade .25s ease both}
+  .sheet.show{display:block;animation:fade .36s ease both}
   @keyframes fade{from{opacity:0}to{opacity:1}}
-  .sheet-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:14px;max-width:380px;width:100%;
-    box-shadow:0 20px 50px -12px rgba(0,0,0,.6)}
+  .sheet-print-mask{
+    position:fixed;left:0;right:0;top:var(--sheet-mask-top, 0px);bottom:0;
+    overflow:hidden;display:flex;justify-content:center;pointer-events:none;
+  }
+  .sheet-card{background:var(--paper);border:3px solid var(--ink);border-radius:16px;padding:14px;max-width:none;width:var(--print-card-width, min(420px, calc(100vw - 40px)));
+    box-shadow:0 20px 50px -12px rgba(0,0,0,.6);
+    position:absolute;top:0;transform-origin:top center;transform:translateY(-100%);
+    opacity:1;pointer-events:auto}
+  .sheet.show .sheet-card{animation:printSheetIn 1.85s cubic-bezier(.18,.72,.16,1) both;will-change:transform,opacity}
+  @keyframes printSheetIn{
+    0%{transform:translateY(-100%)}
+    18%{transform:translateY(-82%)}
+    44%{transform:translateY(-48%)}
+    74%{transform:translateY(var(--print-near-y, 18px))}
+    100%{transform:translateY(var(--print-final-y, 22px))}
+  }
   .sheet-card img{display:block;width:100%;border-radius:8px;border:2px solid var(--ink)}
   .sheet-hint{font-family:"Space Mono",monospace;font-size:12px;text-align:center;color:var(--ink);margin:12px 4px 4px;line-height:1.6}
   .sheet-actions{display:flex;gap:10px;margin-top:12px}
@@ -208,6 +288,7 @@
     <div class="sprockets"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     <div class="brand-row">
       <div class="logo">FILM<b>TAP</b></div>
+      <div class="privacy-note">すべてブラウザ内で処理。<br>写真はどこにも送信されません。</div>
       <div class="tag">Retro<br>Filter Lab</div>
     </div>
   </header>
@@ -219,6 +300,34 @@
         <canvas id="view"></canvas>
         <div class="develop"></div>
         <label class="drop" id="drop" for="file">
+          <div class="demo-flow" aria-hidden="true">
+            <div class="demo-copy">
+              <span class="demo-kicker">RETRO FILTER MAGIC</span>
+              <span class="demo-prefix">フィルム風フィルターで</span>
+              <span class="demo-main"><em>エモい</em>写真に！</span>
+            </div>
+            <figure class="demo-photo demo-before">
+              <img src="assets/demo-idol-before.png" alt="">
+            </figure>
+            <svg class="demo-arrow" viewBox="0 0 120 60" focusable="false" aria-hidden="true">
+              <path d="M7 32 C32 18, 61 17, 94 29"></path>
+              <path d="M82 11 L101 31 L75 45"></path>
+            </svg>
+            <div class="demo-after-stack">
+              <figure class="demo-photo demo-after c">
+                <img src="assets/demo-idol-before.png" alt="" data-demo-filter="fuji">
+              </figure>
+              <figure class="demo-photo demo-after d">
+                <img src="assets/demo-idol-before.png" alt="" data-demo-filter="gr">
+              </figure>
+              <figure class="demo-photo demo-after b">
+                <img src="assets/demo-idol-before.png" alt="" data-demo-filter="summer">
+              </figure>
+              <figure class="demo-photo demo-after a">
+                <img src="assets/demo-idol-before.png" alt="" data-demo-filter="film">
+              </figure>
+            </div>
+          </div>
           <div class="cam">📷</div>
           <div class="big">写真をえらぶ</div>
           <div class="sm">タップ / ドロップで読みこみ</div>
@@ -247,17 +356,17 @@
       <button class="reset" id="resetBtn">べつの写真にする</button>
     </div>
   </main>
-
-  <p class="foot">FILMTAP — すべてブラウザ内で処理。写真はどこにも送信されません。</p>
 </div>
 
 <div class="sheet" id="sheet">
-  <div class="sheet-card">
-    <img id="sheetImg" alt="仕上がり画像">
-    <p class="sheet-hint">画像を長押しして保存（PCは右クリック →「画像を保存」）</p>
-    <div class="sheet-actions">
-      <a class="sheet-dl" id="sheetDl" download>ダウンロード</a>
-      <button class="sheet-close" id="sheetClose" type="button">とじる</button>
+  <div class="sheet-print-mask">
+    <div class="sheet-card">
+      <img id="sheetImg" alt="仕上がり画像">
+      <p class="sheet-hint">画像を長押しして保存（PCは右クリック →「画像を保存」）</p>
+      <div class="sheet-actions">
+        <a class="sheet-dl" id="sheetDl" download>ダウンロード</a>
+        <button class="sheet-close" id="sheetClose" type="button">とじる</button>
+      </div>
     </div>
   </div>
 </div>
@@ -267,17 +376,17 @@
 const FILTERS = [
   {id:"summer", name:"Warm Summer",  exp:.12, con:6,  temp:10, tint:3, sat:5,  vib:16, black:8,  white:252, sH:220,sS:4,  hH:45,hS:12, grain:8,  vig:.10, mid:.44, soft:.2,  green:.12},
   {id:"film",   name:"Warm Film",    exp:.12, con:4,  temp:8,  tint:4, sat:3,  vib:14, black:18, white:247, sH:175,sS:9,  hH:45,hS:12, grain:24, vig:.16, mid:.38, soft:.5,  green:.10},
-  {id:"leica",  name:"Leica",        exp:0,   con:14, temp:4,  tint:2, sat:4,  vib:10, black:2,  white:254, sH:230,sS:6,  hH:40,hS:7,  grain:8,  vig:.15, mid:.40, soft:0,   green:0},
-  {id:"gr",     name:"RICOH GR",     exp:-.05,con:20, temp:-4, tint:3, sat:-2, vib:8,  black:0,  white:255, sH:215,sS:10, hH:45,hS:5,  grain:12, vig:.18, mid:.36, soft:0,   green:0},
-  {id:"fuji",   name:"Fuji Chrome",  exp:0,   con:8,  temp:-2, tint:3, sat:-10,vib:-4, black:8,  white:248, sH:70, sS:6,  hH:45,hS:6,  grain:10, vig:.11, mid:.42, soft:.1,  green:0},
-  {id:"canon",  name:"Canon",        exp:.1,  con:6,  temp:9,  tint:4, sat:3,  vib:12, black:5,  white:252, sH:40, sS:3,  hH:45,hS:10, grain:8,  vig:.12, mid:.40, soft:.15, green:0},
-  {id:"contax", name:"Contax",       exp:.15, con:-4, temp:7,  tint:5, sat:-2, vib:8,  black:22, white:246, sH:60, sS:5,  hH:48,hS:12, grain:14, vig:.13, mid:.42, soft:.7,  green:0},
+  {id:"leica",  name:"レンジファインダー風", exp:0,   con:14, temp:4,  tint:2, sat:4,  vib:10, black:2,  white:254, sH:230,sS:6,  hH:40,hS:7,  grain:8,  vig:.15, mid:.40, soft:0,   green:0},
+  {id:"gr",     name:"スナップ名機風", exp:-.05,con:20, temp:-4, tint:3, sat:-2, vib:8,  black:0,  white:255, sH:215,sS:10, hH:45,hS:5,  grain:12, vig:.18, mid:.36, soft:0,   green:0},
+  {id:"fuji",   name:"青緑クローム風", exp:0,   con:8,  temp:-2, tint:3, sat:-10,vib:-4, black:8,  white:248, sH:70, sS:6,  hH:45,hS:6,  grain:10, vig:.11, mid:.42, soft:.1,  green:0},
+  {id:"canon",  name:"やわらか一眼風", exp:.1,  con:6,  temp:9,  tint:4, sat:3,  vib:12, black:5,  white:252, sH:40, sS:3,  hH:45,hS:10, grain:8,  vig:.12, mid:.40, soft:.15, green:0},
+  {id:"contax", name:"クラシック高級機風", exp:.15, con:-4, temp:7,  tint:5, sat:-2, vib:8,  black:22, white:246, sH:60, sS:5,  hH:48,hS:12, grain:14, vig:.13, mid:.42, soft:.7,  green:0},
   {id:"dispo",  name:"Disposable",   exp:.12, con:-6, temp:12, tint:8, sat:6,  vib:12, black:26, white:246, sH:90, sS:12, hH:50,hS:14, grain:32, vig:.34, mid:.22, soft:.5,  green:0},
-  {id:"instax", name:"Instax",       exp:.18, con:-12,temp:6,  tint:4, sat:-6, vib:6,  black:30, white:242, sH:160,sS:8,  hH:50,hS:10, grain:18, vig:.16, mid:.40, soft:.7,  green:0},
+  {id:"instax", name:"インスタント写真風", exp:.18, con:-12,temp:6,  tint:4, sat:-6, vib:6,  black:30, white:242, sH:160,sS:8,  hH:50,hS:10, grain:18, vig:.16, mid:.40, soft:.7,  green:0},
   /* ===== エモ系レトロフィルム追加 ===== */
-  {id:"utsurun",name:"写ルンです",   exp:.14, con:-4, temp:4,  tint:-6,sat:2,  vib:8,  black:24, white:246, sH:150,sS:14, hH:55,hS:8,  grain:24, vig:.30, mid:.26, soft:.5,  green:.08},
+  {id:"utsurun",name:"レンズ付きフィルム風", exp:.14, con:-4, temp:4,  tint:-6,sat:2,  vib:8,  black:24, white:246, sH:150,sS:14, hH:55,hS:8,  grain:24, vig:.30, mid:.26, soft:.5,  green:.08},
   {id:"y2k",    name:"Y2Kフラッシュ",exp:.20, con:-6, temp:-5, tint:2, sat:-8, vib:4,  black:16, white:252, sH:220,sS:8,  hH:205,hS:6, grain:16, vig:.22, mid:.34, soft:.2,  green:0},
-  {id:"vhs",    name:"VHS",          exp:.05, con:-6, temp:3,  tint:6, sat:-4, vib:6,  black:20, white:247, sH:285,sS:13, hH:185,hS:11,grain:28, vig:.22, mid:.32, soft:.6,  green:0},
+  {id:"vhs",    name:"ホームビデオ風", exp:.05, con:-6, temp:3,  tint:6, sat:-4, vib:6,  black:20, white:247, sH:285,sS:13, hH:185,hS:11,grain:28, vig:.22, mid:.32, soft:.6,  green:0},
   {id:"faded",  name:"色飛びDAYS",   exp:.22, con:-15,temp:6,  tint:3, sat:-12,vib:4,  black:38, white:244, sH:30, sS:8,  hH:45,hS:8,  grain:18, vig:.12, mid:.40, soft:.6,  green:0},
   {id:"golden", name:"黄昏",         exp:.10, con:2,  temp:15, tint:5, sat:4,  vib:14, black:14, white:250, sH:22, sS:14, hH:40,hS:16, grain:14, vig:.24, mid:.32, soft:.4,  green:0},
 ];
@@ -350,6 +459,43 @@ function process(srcData, dstData, w, h, f, strength){
       d[i+3]=s[i+3];
     }
   }
+}
+
+/* 空状態の見本写真にも、実際のフィルター処理を小さく適用する */
+function renderDemoFilters(){
+  const source=document.querySelector(".demo-before img");
+  const demoImgs=[...document.querySelectorAll(".demo-after img[data-demo-filter]")];
+  if(!source || !demoImgs.length) return;
+
+  const render=()=>{
+    if(!source.naturalWidth || !source.naturalHeight) return;
+    const w=300, h=224;
+    demoImgs.forEach(img=>{
+      const f=FILTERS.find(x=>x.id===img.dataset.demoFilter);
+      if(!f) return;
+      try{
+        const cv=document.createElement("canvas");cv.width=w;cv.height=h;
+        const cx=cv.getContext("2d",{willReadFrequently:true});
+        if(f.soft>0) cx.filter=`blur(${Math.max(.25,f.soft).toFixed(2)}px)`;
+        const r=Math.max(w/source.naturalWidth, h/source.naturalHeight);
+        const dw=source.naturalWidth*r, dh=source.naturalHeight*r;
+        cx.drawImage(source,(w-dw)/2,(h-dh)/2,dw,dh);
+        cx.filter="none";
+        const base=cx.getImageData(0,0,w,h);
+        const out=cx.createImageData(w,h);
+        process(base,out,w,h,f,80);
+        cx.putImageData(out,0,0);
+        img.src=cv.toDataURL("image/jpeg",.9);
+        img.dataset.processed="true";
+      }catch(e){
+        // file:// 環境などで canvas 読み取りが制限された場合はCSSフィルター表示に戻す。
+        img.removeAttribute("data-processed");
+      }
+    });
+  };
+
+  if(source.complete) render();
+  else source.addEventListener("load",render,{once:true});
 }
 
 /* ============ アプリ ============ */
@@ -506,25 +652,47 @@ function playEject(done){
   setTimeout(done, reduce ? 600 : 2150);
 }
 
-/* 保存：印刷アニメ → 仕上がり画面へ */
+/* 保存：仕上がり画面へ直接つなぐ */
 let saving=false;
 function save(){
   if(saving || !imgBitmap) return;
   saving=true;
   const {url,name}=buildOutput();
-  printImg.src=url;
   sheetImg.src=url;
   sheetDl.href=url; sheetDl.setAttribute("download",name);
   saveBtn.disabled=true;
-  playEject(()=>{
+  sheet.classList.remove("show");
+  const slotRect=document.querySelector(".slot").getBoundingClientRect();
+  const maskTop=Math.max(0, slotRect.bottom - 2);
+  const printWidth=Math.min(window.innerWidth - 28, slotRect.width + 30);
+  sheet.style.setProperty("--sheet-mask-top", `${maskTop}px`);
+  sheet.style.setProperty("--print-card-width", `${printWidth}px`);
+  sheet.style.display="block";
+  sheet.style.visibility="hidden";
+  const cardRect=sheet.querySelector(".sheet-card").getBoundingClientRect();
+  sheet.style.display="";
+  sheet.style.visibility="";
+  const availableY=window.innerHeight - maskTop - cardRect.height - 18;
+  const finalY=Math.max(12, Math.min(34, availableY));
+  sheet.style.setProperty("--print-final-y", `${finalY}px`);
+  sheet.style.setProperty("--print-near-y", `${finalY + 8}px`);
+  frame.classList.remove("saving-print");
+  void frame.offsetWidth;
+  frame.classList.add("saving-print");
+  const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setTimeout(()=>{
     sheet.classList.add("show");
     ejector.classList.remove("go");
+  }, reduce ? 80 : 260);
+  setTimeout(()=>{
+    frame.classList.remove("saving-print");
     saveBtn.disabled=false;
     saving=false;
-  });
+  }, reduce ? 220 : 2100);
 }
 
 /* ===== イベント ===== */
+renderDemoFilters();
 fileInput.addEventListener("change",e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
 strength.addEventListener("input",()=>{strengthVal.textContent=strength.value+"%";scheduleRender();});
 saveBtn.addEventListener("click",save);
@@ -533,6 +701,7 @@ sheet.addEventListener("click",e=>{if(e.target===sheet)sheet.classList.remove("s
 resetBtn.addEventListener("click",()=>{
   imgBitmap=null;controls.style.display="none";drop.classList.remove("hide");
   fileInput.value="";saveBtn.disabled=true;frame.classList.remove("printing");
+  frame.classList.remove("saving-print");
   ejector.classList.remove("go");printImg.removeAttribute("src");saving=false;
   vctx.clearRect(0,0,view.width,view.height);
 });

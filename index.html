@@ -265,21 +265,21 @@
 <script>
 /* ============ フィルター定義（Lightroomプリセットのブラウザ近似） ============ */
 const FILTERS = [
-  {id:"summer", name:"Warm Summer",  exp:.12, con:6,  temp:10, tint:3, sat:5,  vib:16, black:8,  white:252, sH:220,sS:4,  hH:45,hS:12, grain:8,  vig:.06, mid:.42, soft:.2,  green:.12},
-  {id:"film",   name:"Warm Film",    exp:.12, con:4,  temp:8,  tint:4, sat:3,  vib:14, black:18, white:247, sH:175,sS:9,  hH:45,hS:12, grain:24, vig:.12, mid:.40, soft:.5,  green:.10},
-  {id:"leica",  name:"Leica",        exp:0,   con:14, temp:4,  tint:2, sat:4,  vib:10, black:2,  white:254, sH:230,sS:6,  hH:40,hS:7,  grain:8,  vig:.12, mid:.40, soft:0,   green:0},
-  {id:"gr",     name:"RICOH GR",     exp:-.05,con:20, temp:-4, tint:3, sat:-2, vib:8,  black:0,  white:255, sH:215,sS:10, hH:45,hS:5,  grain:12, vig:.14, mid:.38, soft:0,   green:0},
-  {id:"fuji",   name:"Fuji Chrome",  exp:0,   con:8,  temp:-2, tint:3, sat:-10,vib:-4, black:8,  white:248, sH:70, sS:6,  hH:45,hS:6,  grain:10, vig:.08, mid:.42, soft:.1,  green:0},
-  {id:"canon",  name:"Canon",        exp:.1,  con:6,  temp:9,  tint:4, sat:3,  vib:12, black:5,  white:252, sH:40, sS:3,  hH:45,hS:10, grain:8,  vig:.07, mid:.42, soft:.15, green:0},
-  {id:"contax", name:"Contax",       exp:.15, con:-4, temp:7,  tint:5, sat:-2, vib:8,  black:22, white:246, sH:60, sS:5,  hH:48,hS:12, grain:14, vig:.06, mid:.44, soft:.7,  green:0},
-  {id:"dispo",  name:"Disposable",   exp:.12, con:-6, temp:12, tint:8, sat:6,  vib:12, black:26, white:246, sH:90, sS:12, hH:50,hS:14, grain:32, vig:.36, mid:.20, soft:.5,  green:0},
-  {id:"instax", name:"Instax",       exp:.18, con:-12,temp:6,  tint:4, sat:-6, vib:6,  black:30, white:242, sH:160,sS:8,  hH:50,hS:10, grain:18, vig:.12, mid:.44, soft:.7,  green:0},
+  {id:"summer", name:"Warm Summer",  exp:.12, con:6,  temp:10, tint:3, sat:5,  vib:16, black:8,  white:252, sH:220,sS:4,  hH:45,hS:12, grain:8,  vig:.10, mid:.44, soft:.2,  green:.12},
+  {id:"film",   name:"Warm Film",    exp:.12, con:4,  temp:8,  tint:4, sat:3,  vib:14, black:18, white:247, sH:175,sS:9,  hH:45,hS:12, grain:24, vig:.16, mid:.38, soft:.5,  green:.10},
+  {id:"leica",  name:"Leica",        exp:0,   con:14, temp:4,  tint:2, sat:4,  vib:10, black:2,  white:254, sH:230,sS:6,  hH:40,hS:7,  grain:8,  vig:.15, mid:.40, soft:0,   green:0},
+  {id:"gr",     name:"RICOH GR",     exp:-.05,con:20, temp:-4, tint:3, sat:-2, vib:8,  black:0,  white:255, sH:215,sS:10, hH:45,hS:5,  grain:12, vig:.18, mid:.36, soft:0,   green:0},
+  {id:"fuji",   name:"Fuji Chrome",  exp:0,   con:8,  temp:-2, tint:3, sat:-10,vib:-4, black:8,  white:248, sH:70, sS:6,  hH:45,hS:6,  grain:10, vig:.11, mid:.42, soft:.1,  green:0},
+  {id:"canon",  name:"Canon",        exp:.1,  con:6,  temp:9,  tint:4, sat:3,  vib:12, black:5,  white:252, sH:40, sS:3,  hH:45,hS:10, grain:8,  vig:.12, mid:.40, soft:.15, green:0},
+  {id:"contax", name:"Contax",       exp:.15, con:-4, temp:7,  tint:5, sat:-2, vib:8,  black:22, white:246, sH:60, sS:5,  hH:48,hS:12, grain:14, vig:.13, mid:.42, soft:.7,  green:0},
+  {id:"dispo",  name:"Disposable",   exp:.12, con:-6, temp:12, tint:8, sat:6,  vib:12, black:26, white:246, sH:90, sS:12, hH:50,hS:14, grain:32, vig:.34, mid:.22, soft:.5,  green:0},
+  {id:"instax", name:"Instax",       exp:.18, con:-12,temp:6,  tint:4, sat:-6, vib:6,  black:30, white:242, sH:160,sS:8,  hH:50,hS:10, grain:18, vig:.16, mid:.40, soft:.7,  green:0},
   /* ===== エモ系レトロフィルム追加 ===== */
-  {id:"utsurun",name:"写ルンです",   exp:.14, con:-4, temp:4,  tint:-6,sat:2,  vib:8,  black:24, white:246, sH:150,sS:14, hH:55,hS:8,  grain:24, vig:.14, mid:.35, soft:.5,  green:.08},
-  {id:"y2k",    name:"Y2Kフラッシュ",exp:.20, con:-6, temp:-5, tint:2, sat:-8, vib:4,  black:16, white:252, sH:220,sS:8,  hH:205,hS:6, grain:16, vig:.03, mid:.50, soft:.2,  green:0},
-  {id:"vhs",    name:"VHS",          exp:.05, con:-6, temp:3,  tint:6, sat:-4, vib:6,  black:20, white:247, sH:285,sS:13, hH:185,hS:11,grain:28, vig:.10, mid:.40, soft:.6,  green:0},
-  {id:"faded",  name:"色飛びDAYS",   exp:.22, con:-15,temp:6,  tint:3, sat:-12,vib:4,  black:38, white:244, sH:30, sS:8,  hH:45,hS:8,  grain:18, vig:.05, mid:.45, soft:.6,  green:0},
-  {id:"golden", name:"黄昏",         exp:.10, con:2,  temp:15, tint:5, sat:4,  vib:14, black:14, white:250, sH:22, sS:14, hH:40,hS:16, grain:14, vig:.20, mid:.34, soft:.4,  green:0},
+  {id:"utsurun",name:"写ルンです",   exp:.14, con:-4, temp:4,  tint:-6,sat:2,  vib:8,  black:24, white:246, sH:150,sS:14, hH:55,hS:8,  grain:24, vig:.30, mid:.26, soft:.5,  green:.08},
+  {id:"y2k",    name:"Y2Kフラッシュ",exp:.20, con:-6, temp:-5, tint:2, sat:-8, vib:4,  black:16, white:252, sH:220,sS:8,  hH:205,hS:6, grain:16, vig:.22, mid:.34, soft:.2,  green:0},
+  {id:"vhs",    name:"VHS",          exp:.05, con:-6, temp:3,  tint:6, sat:-4, vib:6,  black:20, white:247, sH:285,sS:13, hH:185,hS:11,grain:28, vig:.22, mid:.32, soft:.6,  green:0},
+  {id:"faded",  name:"色飛びDAYS",   exp:.22, con:-15,temp:6,  tint:3, sat:-12,vib:4,  black:38, white:244, sH:30, sS:8,  hH:45,hS:8,  grain:18, vig:.12, mid:.40, soft:.6,  green:0},
+  {id:"golden", name:"黄昏",         exp:.10, con:2,  temp:15, tint:5, sat:4,  vib:14, black:14, white:250, sH:22, sS:14, hH:40,hS:16, grain:14, vig:.24, mid:.32, soft:.4,  green:0},
 ];
 
 /* hsl(0..360,1,.5) -> rgb方向ベクトル(中心0.5を引いた) */

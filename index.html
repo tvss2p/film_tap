@@ -71,7 +71,8 @@
     border:3px solid var(--ink);border-radius:14px;
     padding:10px;overflow:hidden;
   }
-  .slot{height:8px;border-radius:4px;background:#0c0b09;margin:-2px 6px 8px;box-shadow:inset 0 -3px 4px rgba(0,0,0,.6)}
+  .slot{height:8px;border-radius:4px;background:#0c0b09;margin:-2px 6px 8px;box-shadow:inset 0 -3px 4px rgba(0,0,0,.6);
+    position:relative;z-index:4}
   .frame{
     position:relative;background:var(--paper);border-radius:8px;overflow:hidden;
     aspect-ratio:4/5;display:flex;align-items:center;justify-content:center;
@@ -101,6 +102,26 @@
     100%{filter:none;opacity:1}
   }
   @keyframes devsheet{0%{opacity:.92}45%{opacity:.4}100%{opacity:0}}
+
+  /* ---- 保存時：スロットから印刷されて出てくる演出 ---- */
+  .ejector{
+    position:absolute;left:13px;right:13px;top:11px;bottom:13px;
+    overflow:hidden;z-index:3;pointer-events:none;display:none;border-radius:0 0 8px 8px;
+  }
+  .ejector.go{display:block}
+  .printcard{
+    position:absolute;left:50%;top:0;transform:translate(-50%,-120%);
+    width:64%;background:#fff;border:3px solid #11100d;border-radius:6px;
+    padding:7px 7px 24px;box-shadow:0 14px 26px -10px rgba(0,0,0,.65);
+  }
+  .printcard img{display:block;width:100%;border-radius:3px}
+  .ejector.go .printcard{animation:eject2 2.05s cubic-bezier(.18,.86,.26,1) forwards}
+  @keyframes eject2{
+    0%  {transform:translate(-50%,-120%)}
+    72% {transform:translate(-50%,9%)}
+    84% {transform:translate(-50%,5%)}
+    100%{transform:translate(-50%,7%)}
+  }
 
   /* ---- controls ---- */
   .controls{margin-top:14px}
@@ -159,6 +180,10 @@
     .frame.printing .develop{animation:devsheet .5s ease-out both!important}
   }
   @keyframes devsoft{0%{opacity:.4;filter:brightness(1.3) saturate(.6)}100%{opacity:1;filter:none}}
+  @media (prefers-reduced-motion: reduce){
+    .ejector.go .printcard{animation:eject2soft .45s ease-out forwards!important}
+  }
+  @keyframes eject2soft{0%{opacity:0;transform:translate(-50%,-6%)}100%{opacity:1;transform:translate(-50%,7%)}}
 
   /* ---- 保存オーバーレイ ---- */
   .sheet{position:fixed;inset:0;z-index:30;display:none;align-items:center;justify-content:center;padding:20px;
@@ -201,6 +226,9 @@
           <div class="sm">タップ / ドロップで読みこみ</div>
           <span class="pill">画像をひらく</span>
         </label>
+      </div>
+      <div class="ejector" id="ejector" aria-hidden="true">
+        <div class="printcard"><img id="printImg" alt=""></div>
       </div>
     </div>
     <input type="file" id="file" accept="image/*">
@@ -334,6 +362,8 @@ const strengthVal=document.getElementById("strengthVal");
 const printBtn=document.getElementById("printBtn");
 const saveBtn=document.getElementById("saveBtn");
 const resetBtn=document.getElementById("resetBtn");
+const ejector=document.getElementById("ejector");
+const printImg=document.getElementById("printImg");
 const sheet=document.getElementById("sheet");
 const sheetImg=document.getElementById("sheetImg");
 const sheetDl=document.getElementById("sheetDl");
@@ -455,8 +485,8 @@ function playPrint(){
   setTimeout(()=>{ printBtn.disabled=false; saveBtn.disabled=false; }, dur);
 }
 
-/* 保存（フル解像度で処理してダウンロード） */
-function save(){
+/* フル解像度で処理して仕上がり画像を生成 */
+function buildOutput(){
   const f=FILTERS.find(x=>x.id===activeId);
   const maxSide=2400;
   let w=imgBitmap.width,h=imgBitmap.height;
@@ -473,9 +503,34 @@ function save(){
   cx.putImageData(out,0,0);
   const url=cv.toDataURL("image/jpeg",0.92);
   const name=`filmtap_${f.id}_${strength.value}.jpg`;
+  return {url,name};
+}
+
+/* スロットから印刷されて出てくるアニメーション */
+function playEject(done){
+  ejector.classList.remove("go");
+  void ejector.offsetWidth; // reflow でアニメをリセット
+  ejector.classList.add("go");
+  const reduce=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  setTimeout(done, reduce ? 600 : 2150);
+}
+
+/* 保存：印刷アニメ → 仕上がり画面へ */
+let saving=false;
+function save(){
+  if(saving || !imgBitmap) return;
+  saving=true;
+  const {url,name}=buildOutput();
+  printImg.src=url;
   sheetImg.src=url;
   sheetDl.href=url; sheetDl.setAttribute("download",name);
-  sheet.classList.add("show");
+  printBtn.disabled=true; saveBtn.disabled=true;
+  playEject(()=>{
+    sheet.classList.add("show");
+    ejector.classList.remove("go");
+    printBtn.disabled=false; saveBtn.disabled=false;
+    saving=false;
+  });
 }
 
 /* ===== イベント ===== */
@@ -488,6 +543,7 @@ sheet.addEventListener("click",e=>{if(e.target===sheet)sheet.classList.remove("s
 resetBtn.addEventListener("click",()=>{
   imgBitmap=null;controls.style.display="none";drop.classList.remove("hide");
   fileInput.value="";saveBtn.disabled=true;frame.classList.remove("printing");
+  ejector.classList.remove("go");printImg.removeAttribute("src");saving=false;
   vctx.clearRect(0,0,view.width,view.height);
 });
 
